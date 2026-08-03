@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Atharva Agarwal | Creative Developer</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Syncopate:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        :root {
+            --bg-deep: #000205;
+            --accent: #00f3ff;
+            --accent-dim: rgba(0, 243, 255, 0.1);
+            --secondary: #5d48ff;
+            --glass-surf: rgba(20, 25, 30, 0.6);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --text-main: #ffffff;
+            --text-sub: #9ca3af;
+        }
+
+        /* 
+           NOTE: 'cursor: none' creates a yellow warning line in VS Code. 
+           It is purely an accessibility warning. It does NOT mean the code is broken.
+           We keep it to ensure the custom circle cursor works. 
+        */
+        * { margin: 0; padding: 0; box-sizing: border-box; cursor: none; }
+
+        body {
+            background-color: var(--bg-deep);
+            color: var(--text-main);
+            font-family: 'Inter', sans-serif;
+            overflow-x: hidden;
+            width: 100%;
+        }
+
+        /* --- LIGHTBOX (ZOOM FEATURE) --- */
+        #lightbox {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.95); z-index: 100000;
+            display: none; justify-content: center; align-items: center;
+            opacity: 0; transition: opacity 0.3s; backdrop-filter: blur(5px);
+        }
+        #lightbox.active { display: flex; opacity: 1; }
+        #lightbox img {
+            max-width: 90%; max-height: 90%; 
+            box-shadow: 0 0 50px rgba(0, 243, 255, 0.2); 
+            border: 2px solid var(--accent);
+            transform: scale(0.9); transition: 0.3s;
+        }
+        #lightbox.active img { transform: scale(1); }
+        #lightbox-close {
+            position: absolute; top: 30px; right: 40px; font-size: 3rem; color: #fff; cursor: none; transition: 0.3s;
+        }
+        #lightbox-close:hover { color: var(--accent); }
+
+        /* --- STANDARD STYLES --- */
+        #starfield { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; background: linear-gradient(to bottom, #020202, #080815); }
+        
+        #cursor-dot { position: fixed; top:0; left:0; width: 6px; height: 6px; background: var(--accent); border-radius: 50%; pointer-events: none; z-index: 9999; }
+        
+        #cursor-ring { 
+            position: fixed; top:0; left:0; width: 40px; height: 40px; 
+            border: 1px solid var(--accent); border-radius: 50%; 
+            pointer-events: none; z-index: 9998; 
+            /* Fixed transition warning */
+            transition: width 0.3s, height 0.3s, background-color 0.3s; 
+        }
+        
+        body.hovering #cursor-ring { width: 70px; height: 70px; background-color: rgba(0, 243, 255, 0.05); border-color: transparent; }
+
+        .container { max-width: 1200px; margin: 0 auto; padding: 0 2rem; position: relative; }
+        .section-gap { padding: 100px 0; }
+        .reveal { opacity: 0; transform: translateY(50px); transition: 0.8s ease-out; }
+        .reveal.active { opacity: 1; transform: translateY(0); }
+
+        .heading-future {
+            font-family: 'Syncopate', sans-serif; font-weight: 700; text-transform: uppercase;
+            font-size: clamp(2rem, 5vw, 4rem); letter-spacing: 2px; line-height: 1; margin-bottom: 2rem;
+            background: linear-gradient(90deg, #fff, var(--text-sub)); -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        }
+
+        /* Nav */
+        nav { position: fixed; top: 0; width: 100%; z-index: 100; padding: 20px 0; mix-blend-mode: exclusion; }
+        .nav-wrapper { display: flex; justify-content: space-between; align-items: center; }
+        .logo { font-family: 'Syncopate'; font-weight: 700; color: #fff; font-size: 1.2rem; }
+        .menu-list { display: flex; gap: 3rem; list-style: none; }
+        .menu-list a { font-size: 0.85rem; font-weight: 500; color: #fff; text-decoration: none; position: relative; transition: 0.3s; }
+        .menu-list a::after { content: ''; position: absolute; bottom: -5px; left: 0; width: 0%; height: 1px; background: var(--accent); transition: 0.3s; }
+        .menu-list a:hover::after { width: 100%; }
+
+        .hero { height: 100vh; display: flex; align-items: center; }
+        .role-tag { font-family: monospace; color: var(--accent); margin-bottom: 1rem; display: block; border-left: 2px solid var(--accent); padding-left: 1rem; }
+        .cta-container { margin-top: 3rem; display: flex; gap: 1rem; }
+        
+        .glow-btn { position: relative; padding: 16px 40px; background: var(--text-main); color: #000; font-family: 'Syncopate'; font-weight: 700; font-size: 0.8rem; text-decoration: none; overflow: hidden; transition: 0.4s; }
+        .glow-btn:hover { background: var(--accent); box-shadow: 0 0 40px var(--accent-dim); }
+        .line-btn { padding: 16px 40px; border: 1px solid rgba(255,255,255,0.3); color: #fff; font-family: 'Syncopate'; font-weight: 700; font-size: 0.8rem; text-decoration: none; transition: 0.3s; }
+        .line-btn:hover { border-color: #fff; background: rgba(255,255,255,0.05); }
+
+        .tilt-box { background: var(--glass-surf); border-top: 1px solid var(--glass-border); padding: 2.5rem; transform-style: preserve-3d; transition: 0.1s; position: relative; }
+        .tilt-box:hover { box-shadow: 0 0 50px rgba(0, 0, 0, 0.5); }
+        .tilt-box::after { content: ''; position: absolute; top:0; left:0; width:100%; height:100%; background: radial-gradient(800px circle at var(--mouse-x) var(--mouse-y), rgba(255,255,255,0.05), transparent 40%); z-index: 1; pointer-events: none; }
+
+        /* --- INNOVATIVE SKILLS STYLES --- */
+        .controls-dock {
+            display: flex; gap: 1rem; margin-bottom: 3rem; flex-wrap: wrap;
+        }
+        .filter-btn {
+            padding: 8px 24px; border-radius: 50px; background: transparent; 
+            border: 1px solid var(--glass-border); color: #777; font-family: 'Syncopate'; font-weight: 700; 
+            font-size: 0.7rem; transition: 0.3s; cursor: none; letter-spacing: 1px;
+        }
+        .filter-btn.active, .filter-btn:hover {
+            border-color: var(--accent); color: var(--accent); background: rgba(0, 243, 255, 0.05);
+            box-shadow: 0 0 20px rgba(0, 243, 255, 0.1); transform: translateY(-3px);
+        }
+
+        .node-cloud {
+            display: flex; flex-wrap: wrap; gap: 15px;
+        }
+
+        .skill-node {
+            height: 90px; padding: 0 30px; display: flex; flex-direction: column; justify-content: center; align-items: center;
+            background: rgba(10, 15, 25, 0.4); border: 1px solid var(--glass-border); backdrop-filter: blur(10px);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+            border-radius: 12px; min-width: 140px; flex-grow: 1;
+        }
+        .skill-node i { font-size: 1.8rem; margin-bottom: 8px; color: #555; transition: 0.3s; }
+        .skill-node span { font-family: 'Inter'; font-size: 0.8rem; font-weight: 500; color: #888; transition: 0.3s; }
+        
+        .skill-node:hover { 
+            transform: scale(1.1); border-color: var(--accent); background: rgba(0, 243, 255, 0.05); 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5); z-index: 10; 
+        }
+        .skill-node:hover i { color: var(--accent); transform: scale(1.2); }
+        .skill-node:hover span { color: #fff; }
+        .skill-node.dimmed { opacity: 0.15; transform: scale(0.9); filter: grayscale(100%); pointer-events: none; }
+
+        /* Experience Log */
+        .log-container { border-left: 2px solid var(--glass-border); padding-left: 3rem; }
+        .log-item { position: relative; margin-bottom: 4rem; }
+        .log-marker { position: absolute; left: -3.55rem; top: 5px; width: 18px; height: 18px; background: #000; border: 2px solid var(--text-sub); border-radius: 50%; transition: 0.3s; }
+        .log-item:hover .log-marker { border-color: var(--accent); background: var(--accent); box-shadow: 0 0 20px var(--accent); }
+        .log-date { color: var(--accent); font-family: monospace; display: block; margin-bottom: 0.5rem; }
+        .log-title { font-size: 1.5rem; color: #fff; font-weight: 600; margin-bottom: 0.2rem; }
+        .log-org { font-size: 1rem; color: #777; font-style: italic; margin-bottom: 1rem; }
+        .log-desc { line-height: 1.7; color: var(--text-sub); max-width: 600px; }
+
+        /* Work / Projects */
+        .project-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem; }
+        .p-card { min-height: 300px; display: flex; flex-direction: column; justify-content: space-between; }
+        .p-icon { font-size: 3rem; margin-bottom: 1.5rem; background: -webkit-linear-gradient(var(--accent), var(--secondary)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        
+        .cert-wrap { height: 200px; overflow: hidden; margin-bottom: 1.5rem; background: #000; display: flex; justify-content: center; align-items: center; position: relative; }
+        .cert-wrap img { width: 100%; height: 100%; object-fit: contain; opacity: 0.6; transition: 0.5s; filter: grayscale(100%); }
+        .tilt-box:hover .cert-wrap img { opacity: 1; filter: grayscale(0%); transform: scale(1.05); }
+        
+        .zoom-hint { 
+            position: absolute; bottom: 10px; right: 10px; background: var(--accent); color: #000; 
+            padding: 4px 10px; font-size: 0.7rem; font-weight: bold; border-radius: 4px; opacity: 0; transition: 0.3s;
+        }
+        .tilt-box:hover .zoom-hint { opacity: 1; }
+
+        footer { border-top: 1px solid var(--glass-border); padding: 5rem 0; text-align: center; }
+        .socials { display: flex; justify-content: center; gap: 3rem; margin: 3rem 0; }
+        .socials a { font-size: 2rem; color: var(--text-sub); transition: 0.3s; }
+        .socials a:hover { color: var(--accent); transform: scale(1.1); }
+
+        @media(max-width: 768px) {
+            .heading-future { font-size: 2.5rem; }
+            .node-cloud { gap: 10px; }
+            .skill-node { min-width: 45%; }
+            #cursor-dot, #cursor-ring { display: none; }
+            * { cursor: auto; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- LIGHTBOX OVERLAY -->
+    <div id="lightbox" onclick="closeLightbox()">
+        <span id="lightbox-close">&times;</span>
+        <img id="lightbox-img" src="" alt="Full Certificate">
+    </div>
+
+    <!-- STARFIELD BG -->
+    <canvas id="starfield"></canvas>
+    <div id="cursor-dot"></div>
+    <div id="cursor-ring"></div>
+
+    <nav>
+        <div class="container nav-wrapper">
+            <div class="logo">ATHARVA .Dev</div>
+            <ul class="menu-list">
+                <li><a href="#about" class="h-trig">01. About</a></li>
+                <li><a href="#tech" class="h-trig">02. Stack</a></li>
+                <li><a href="#experience" class="h-trig">03. Logs</a></li>
+                <li><a href="#work" class="h-trig">04. Work</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <main>
+        <!-- HERO -->
+        <section class="hero container">
+            <div class="hero-content">
+                <span class="role-tag reveal active">> SYSTEM ONLINE</span>
+                <h1 class="heading-future reveal active">Atharva <br> Agarwal</h1>
+                <p style="color:#aaa; font-size:1.1rem; max-width:500px; margin-top:2rem;" class="reveal active">
+                    BCA Student. Creative Technologist. I fuse Python logic with cinematic storytelling.
+                </p>
+                <div class="cta-container reveal active">
+                    <a href="#work" class="glow-btn h-trig">Explore Works</a>
+                    <a href="resume.pdf" class="line-btn h-trig">Resume</a>
+                </div>
+            </div>
+        </section>
+
+        <!-- ABOUT -->
+        <section id="about" class="section-gap container">
+            <div class="reveal">
+                <span class="role-tag">01 // IDENTITY</span>
+                <h2 class="heading-future">The Hybrid Profile</h2>
+                <div class="tilt-box h-trig">
+                    <p style="font-size: 1.3rem; color: #ddd; line-height: 1.8;">
+                        Currently pursuing BCA at <strong>BIT Mesra (Jaipur)</strong>. 
+                        Most developers focus on code. I focus on the impact. With a background in commerce and expertise in <strong>AI Automation</strong> and <strong>Film Scripting</strong>, I approach problems with dual perspective: Is it efficient? And does it tell a good story?
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- *** INNOVATIVE SKILLS: THE NEURAL CLOUD (Updated) *** -->
+        <section id="tech" class="section-gap container">
+            <div class="reveal">
+                <span class="role-tag">02 // CAPABILITIES</span>
+                <h2 class="heading-future">Neural Stack</h2>
+
+                <!-- Filters -->
+                <div class="controls-dock">
+                    <button class="filter-btn active h-trig" onclick="filterSkills('all', this)">[ VIEW ALL ]</button>
+                    <button class="filter-btn h-trig" onclick="filterSkills('cat-dev', this)">/ DEVELOPMENT</button>
+                    <button class="filter-btn h-trig" onclick="filterSkills('cat-ai', this)">/ AI & MODELS</button>
+                    <button class="filter-btn h-trig" onclick="filterSkills('cat-create', this)">/ CREATIVE</button>
+                </div>
+
+                <!-- Floating Node Cloud -->
+                <div class="node-cloud">
+                    <!-- DEVELOPMENT SKILLS -->
+                    <div class="skill-node cat-dev h-trig"><i class="fa-brands fa-python"></i><span>Python</span></div>
+                    <div class="skill-node cat-dev h-trig"><i class="fa-brands fa-linux"></i><span>Linux</span></div>
+                    <div class="skill-node cat-dev h-trig"><i class="fa-solid fa-code"></i><span>C++ / C</span></div>
+                    <div class="skill-node cat-dev h-trig"><i class="fa-brands fa-java"></i><span>Java</span></div>
+                    <div class="skill-node cat-dev h-trig"><i class="fa-solid fa-database"></i><span>Html</span></div>
+                    <div class="skill-node cat-dev h-trig"><i class="fa-brands fa-html5"></i><span>CSS</span></div>
+                    <div class="skill-node cat-dev h-trig"><i class="fa-brands fa-js"></i><span>JavaScript</span></div>
+                    <div class="skill-node cat-dev h-trig"><i class="fa-solid fa-server"></i><span>Apache</span></div>
+
+                    <!-- AI SKILLS (UPDATED) -->
+                    <div class="skill-node cat-ai h-trig"><i class="fa-solid fa-brain"></i><span>Prompt Eng</span></div>
+                    <div class="skill-node cat-ai h-trig"><i class="fa-solid fa-robot"></i><span>ChatGPT</span></div>
+                    <div class="skill-node cat-ai h-trig"><i class="fa-solid fa-microchip"></i><span>Gemini</span></div>
+                    <div class="skill-node cat-ai h-trig"><i class="fa-solid fa-bolt"></i><span>Claude AI</span></div>
+                    <div class="skill-node cat-ai h-trig"><i class="fa-solid fa-image"></i><span>Img Gen</span></div>
+                    <div class="skill-node cat-ai h-trig"><i class="fa-solid fa-wand-magic-sparkles"></i><span>Google AI studio</span></div>
+                    <div class="skill-node cat-ai h-trig"><i class="fa-solid fa-magnifying-glass"></i><span>Perplexity</span></div>
+                    <div class="skill-node cat-ai h-trig"><i class="fa-solid fa-rocket"></i><span>Grok</span></div>
+
+                    <!-- CREATIVE & SOFT SKILLS -->
+                    <div class="skill-node cat-create h-trig"><i class="fa-solid fa-feather"></i><span>Scriptwriting</span></div>
+                    <div class="skill-node cat-create h-trig"><i class="fa-solid fa-film"></i><span>Visual Story</span></div>
+                    <div class="skill-node cat-create h-trig"><i class="fa-solid fa-paragraph"></i><span>Blogging</span></div>
+                    <div class="skill-node cat-create h-trig"><i class="fa-solid fa-pen-fancy"></i><span>Editing</span></div>
+                    <div class="skill-node cat-create h-trig"><i class="fa-solid fa-palette"></i><span>Canva</span></div>
+                    <div class="skill-node cat-create h-trig"><i class="fa-solid fa-users"></i><span>Leadership</span></div>
+                    <div class="skill-node cat-create h-trig"><i class="fa-solid fa-check-double"></i><span>Project Mgmt</span></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- HISTORY -->
+        <section id="experience" class="section-gap container">
+            <div class="reveal">
+                <span class="role-tag">03 // HISTORY</span>
+                <h2 class="heading-future">Experience Log</h2>
+                <div class="log-container">
+                    <div class="log-item h-trig">
+                        <div class="log-marker"></div>
+                        <span class="log-date">NOV 2025</span>
+                        <h3 class="log-title">Content Writing Intern</h3>
+                        <p class="log-org">InAmigos Foundation</p>
+                        <p class="log-desc">Crafted high-impact content. Balanced creative expression with editorial rigor.</p>
+                    </div>
+                    <div class="log-item h-trig">
+                        <div class="log-marker"></div>
+                        <span class="log-date">2025 - PRESENT</span>
+                        <h3 class="log-title">BCA Undergraduate</h3>
+                        <p class="log-org">BIT Mesra, Jaipur</p>
+                        <p class="log-desc">Technical Volunteer. Participant in 'Road to AI'. Developing Full Stack skills.</p>
+                    </div>
+                    <div class="log-item h-trig">
+                        <div class="log-marker"></div>
+                        <span class="log-date">2025</span>
+                        <h3 class="log-title">Senior Secondary</h3>
+                        <p class="log-org">St Anselms North City School</p>
+                        <p class="log-desc">Commerce Stream (80%). Led school drama scripts teams.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- WORK & CERTS -->
+        <section id="work" class="section-gap container">
+            <div class="reveal">
+                <span class="role-tag">04 // DATABASE</span>
+                <h2 class="heading-future">Selected Works</h2>
+                <div class="project-grid">
+                    <div class="tilt-box p-card h-trig">
+                        <div>
+                            <i class="fa-solid fa-clapperboard p-icon"></i>
+                            <h3>Script: "Social Anxiety"</h3>
+                            <p style="color:#aaa; margin-top:10px">Psychological drama script inspired by Fight Club.</p>
+                        </div>
+                    </div>
+                    <div class="tilt-box p-card h-trig">
+                        <div>
+                            <i class="fa-solid fa-database p-icon"></i>
+                            <h3>Python DB Connector</h3>
+                            <p style="color:#aaa; margin-top:10px">Backend connectivity module linking Python with MySQL.</p>
+                        </div>
+                    </div>
+                    <div class="tilt-box p-card h-trig">
+                        <div>
+                            <i class="fa-solid fa-layer-group p-icon"></i>
+                            <h3>Content Portfolio</h3>
+                            <p style="color:#aaa; margin-top:10px">CMS-managed collection of technical and social blogs.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CERTIFICATES WITH ZOOM -->
+             <div class="reveal" style="margin-top: 5rem;">
+                <span class="role-tag">05 // VERIFICATION</span>
+                <h2 class="heading-future" style="font-size:2rem;">Certified</h2>
+                <div class="project-grid" style="grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));">
+                    
+                    <div class="tilt-box h-trig" onclick="openLightbox('Atharva Agarwal.png')" style="cursor: pointer;">
+                        <div class="cert-wrap">
+                            <img src="Atharva Agarwal.png" alt="Training">
+                            <span class="zoom-hint">CLICK TO ZOOM</span>
+                        </div>
+                        <h4>Web Dev & Python</h4>
+                        <span style="font-size:0.8rem; color:#666">Samyak Training</span>
+                    </div>
+
+                    <div class="tilt-box h-trig" onclick="openLightbox('Screenshot 2025-12-23 235925.png')" style="cursor: pointer;">
+                        <div class="cert-wrap">
+                            <img src="Screenshot 2025-12-23 235925.png" alt="Intern">
+                            <span class="zoom-hint">CLICK TO ZOOM</span>
+                        </div>
+                        <h4>Internship Completion</h4>
+                        <span style="font-size:0.8rem; color:#666">InAmigos Foundation</span>
+                    </div>
+                </div>
+             </div>
+        </section>
+
+    </main>
+
+    <footer>
+        <h2 style="font-family:'Syncopate'; margin-bottom: 2rem;">End Protocol</h2>
+        <a href="mailto:atharva22agarwal@gmail.com" style="color:var(--accent); font-size:1.2rem;" class="h-trig">atharva22agarwal@gmail.com</a>
+        <div class="socials">
+            <a href="https://www.linkedin.com/in/atharva-agrawal-18365a380/?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=android_app" class="h-trig"><i class="fa-brands fa-linkedin-in"></i></a>
+            <a href="https://github.com/atharva22agarwal-afk" class="h-trig"><i class="fa-brands fa-github"></i></a>
+            <a href="tel:+917073646599" class="h-trig"><i class="fa-solid fa-phone"></i></a>
+        </div>
+        <p style="color:#555;">&copy; 2025 Atharva Agarwal</p>
+    </footer>
+
+    <!-- LOGIC -->
+    <script>
+        // 1. LIGHTBOX FUNCTION
+        const lightbox = document.getElementById('lightbox');
+        const lightboxImg = document.getElementById('lightbox-img');
+
+        function openLightbox(imageSrc) {
+            lightboxImg.src = imageSrc;
+            lightbox.classList.add('active');
+        }
+
+        function closeLightbox() {
+            lightbox.classList.remove('active');
+        }
+
+        // 2. STARFIELD BACKGROUND
+        const canvas = document.getElementById('starfield');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+        const stars = [];
+        for(let i=0; i<300; i++) {
+            stars.push({
+                x: Math.random() * canvas.width, y: Math.random() * canvas.height,
+                radius: Math.random() * 1.5, color: Math.random() > 0.8 ? '#00f3ff' : '#ffffff',
+                speed: Math.random() * 0.5
+            });
+        }
+        function animateStars() {
+            ctx.fillStyle = 'rgba(0, 2, 5, 0.2)'; 
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            stars.forEach(star => {
+                ctx.beginPath();
+                ctx.arc(star.x, star.y, star.radius, 0, Math.PI * 2);
+                ctx.fillStyle = star.color;
+                ctx.fill();
+                star.y -= star.speed; 
+                if (star.y < 0) { star.y = canvas.height; star.x = Math.random() * canvas.width; }
+                let dx = mouse.x - star.x; let dy = mouse.y - star.y;
+                let dist = Math.sqrt(dx*dx + dy*dy);
+                if (dist < 150) {
+                    ctx.beginPath();
+                    ctx.strokeStyle = `rgba(0, 243, 255, ${1 - dist/150})`;
+                    ctx.lineWidth = 0.5;
+                    ctx.moveTo(star.x, star.y);
+                    ctx.lineTo(mouse.x, mouse.y);
+                    ctx.stroke();
+                }
+            });
+            requestAnimationFrame(animateStars);
+        }
+        
+        let mouse = { x: 0, y: 0 };
+        window.addEventListener('mousemove', e => {
+            mouse.x = e.clientX; mouse.y = e.clientY;
+            stars.forEach(star => {
+                let dx = (mouse.x - canvas.width/2) * 0.005;
+                let dy = (mouse.y - canvas.height/2) * 0.005;
+                star.x += dx; star.y += dy;
+            })
+        });
+        animateStars();
+        window.addEventListener('resize', () => { canvas.width = window.innerWidth; canvas.height = window.innerHeight; });
+
+        // 3. CURSOR & TILT
+        const cursorDot = document.getElementById('cursor-dot');
+        const cursorRing = document.getElementById('cursor-ring');
+        const tiltBoxes = document.querySelectorAll('.tilt-box');
+
+        document.addEventListener('mousemove', e => {
+            cursorDot.style.left = e.clientX + 'px';
+            cursorDot.style.top = e.clientY + 'px';
+            setTimeout(() => {
+                cursorRing.style.left = e.clientX + 'px';
+                cursorRing.style.top = e.clientY + 'px';
+            }, 80);
+
+            // Light Effect calculation for tilt boxes
+            tiltBoxes.forEach(box => {
+                const rect = box.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                box.style.setProperty('--mouse-x', `${x}px`);
+                box.style.setProperty('--mouse-y', `${y}px`);
+                
+                const centerX = rect.left + rect.width / 2;
+                const centerY = rect.top + rect.height / 2;
+                const mouseX = e.clientX - centerX;
+                const mouseY = e.clientY - centerY;
+                const rotateX = (mouseY / 25) * -1; 
+                const rotateY = (mouseX / 25);
+                
+                if(e.clientX > rect.left && e.clientX < rect.right && e.clientY > rect.top && e.clientY < rect.bottom){
+                     box.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
+                } else {
+                     box.style.transform = `perspective(1000px) rotateX(0) rotateY(0)`;
+                }
+            });
+        });
+
+        // Add Active State
+        setTimeout(() => {
+             const allTriggers = document.querySelectorAll('.h-trig');
+             allTriggers.forEach(link => {
+                link.addEventListener('mouseenter', () => document.body.classList.add('hovering'));
+                link.addEventListener('mouseleave', () => document.body.classList.remove('hovering'));
+            });
+        }, 100);
+
+        // 4. SKILLS FILTER LOGIC
+        function filterSkills(cat, btn) {
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            document.querySelectorAll('.skill-node').forEach(el => {
+                if(cat === 'all') el.classList.remove('dimmed');
+                else el.classList.toggle('dimmed', !el.classList.contains(cat));
+            });
+        }
+
+        // 5. OBSERVER
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if(entry.isIntersecting) {
+                    entry.target.classList.add('active');
+                }
+            });
+        }, { threshold: 0.1 });
+        document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+    </script>
+</body>
+</html>

@@ -1,0 +1,8 @@
+{
+  "rewrites": [
+    {
+      "source": "/",
+      "destination": "/atharv-portfolio.html"
+    }
+  ]
+}
