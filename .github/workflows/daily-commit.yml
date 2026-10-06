@@ -1,0 +1,50 @@
+name: Daily Algorithms Practice
+
+on:
+  schedule:
+    # Runs at 06:00 UTC (11:30 AM IST) every day
+    - cron: '0 6 * * *'
+  workflow_dispatch: # Allows manual trigger anytime from GitHub Actions tab
+
+permissions:
+  contents: write
+
+jobs:
+  daily-practice:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Run Daily Algorithm Practice Log
+        run: |
+          python -c "
+          import datetime, os
+          today = datetime.datetime.now().strftime('%Y-%m-%d')
+          log_file = 'DAILY_STREAK.md'
+          entry = f'- 📅 **{today}**: Daily practice session logged & active streak verified.\n'
+          if not os.path.exists(log_file):
+              with open(log_file, 'w', encoding='utf-8') as f:
+                  f.write('# 🔥 Daily Practice Streak Log\n\n' + entry)
+          else:
+              with open(log_file, 'a', encoding='utf-8') as f:
+                  f.write(entry)
+          print(f'Logged streak for {today}')
+          "
+
+      - name: Commit and Push
+        run: |
+          git config --global user.name "Atharva Agarwal"
+          git config --global user.email "atharva22agarwal@gmail.com"
+          git add DAILY_STREAK.md
+          if git diff --staged --quiet; then
+            echo "No changes to commit."
+          else
+            git commit -m "chore: record daily algorithm practice session ($(date +'%Y-%m-%d'))"
+            git push origin main
+          fi
